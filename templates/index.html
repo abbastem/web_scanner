@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Vulnerability Scanner</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+
+</head>
+<body style="background-color: #f4f6f8; font-family: 'Open Sans', sans-serif;">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col col-6">
+            <div class="mb-3">
+                <h1 class="text-center mt-5 mb-3 text-primary">
+                    🔐 Web Vulnerability Scanner
+                </h1>
+                <p class="text-center text-muted">Powered by Flask | Scanner for XSS, SQLi, CSRF, IDOR, DoS</p>
+                <hr>
+
+                {% if error %}
+                    <p class="error">{{ error }}</p>
+                {% endif %}
+                <form method="POST" action="/" class="needs-validation" enctype="multipart/form-data">
+                    <!-- URL Input -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <label for="url" class="form-label">🌐 Target URL</label>
+                            <input type="url" class="form-control" id="url" name="url" placeholder="https://example.com" required>
+                        </div>
+                    </div>
+
+                    <!-- URL Login -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <label for="login" class="form-label">🌐 Log in URL</label>
+                            <input type="url" class="form-control" id="login" name="login" placeholder="https://example.com/login">
+                        </div>
+                    </div>
+
+                    <!-- Ignored URLs -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <label for="ignore" class="form-label">🚫 Ignore URL</label>
+                            <input type="url" class="form-control" id="ignore" name="ignore" placeholder="https://example.com/logout">
+                        </div>
+                    </div>
+
+                    <!-- Vulnerability Selection -->
+                    <div class="card mt-4 mb-4 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">🛡️ Vulnerability Checks</h5>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="all" id="all">
+                                <label class="form-check-label" for="all">All (XSS, SQLi, CSRF, IDOR, Fuzz)</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="xss" id="xss">
+                                <label class="form-check-label" for="xss">XSS</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="dxss" id="dxss">
+                                <label class="form-check-label" for="dxss">Dom XSS</label>
+                            </div>
+                            <br>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="sqli" id="sqli">
+                                <label class="form-check-label" for="sqli">SQLi</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="bsqli" id="bsqli">
+                                <label class="form-check-label" for="bsqli">Time-Based SQLi</label>
+                            </div>
+                            <br>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="csrf" id="csrf">
+                                <label class="form-check-label" for="csrf">CSRF</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="idor" id="idor">
+                                <label class="form-check-label" for="idor">IDOR</label>
+                            </div>
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" name="dos" id="dos">
+                                <label class="form-check-label text-danger fw-bold" for="dos">DoS Only (⚠️ disables other tests)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Authentication -->
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">🔐 Authentication (Optional)</h5>
+                            <div class="row g-2">
+                                <div class="col-md">
+                                    <input type="text" class="form-control" placeholder="Username" name="uname">
+                                </div>
+                                <div class="col-md">
+                                    <input type="password" class="form-control" placeholder="Password" name="password">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Threads and Output -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <label for="thread" class="form-label">🧵 Number of Threads</label>
+                                    <input type="number" class="form-control" name="thread" id="thread" value="5" min="1" max="50">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <label class="form-label">📄 Output Format</label>
+                                    <select class="form-select" name="output">
+                                        <option value="html">HTML</option>
+                                        <option value="json">JSON</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mt-4">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <input class="form-check-input" type="checkbox" name="selenium" id="selenium">
+                                    <label class="form-check-label" for="selenium">Crawl With Selenium</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                     <!-- Submit Button -->
+                    <div class="mt-3 d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">Start Scan</button>
+                    </div>
+                </form>
+
+                <hr>
+                <h2 class="text-center mt-5 mb-3 text-primary"> Custom Form Test</h2>
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <form id="from_input" action="/manual" class="needs-validation">
+                            <label for="form-html" class="form-label">Past HTML form code:</label>
+                            <textarea id="form-html" name="form-html" rows="6" class="form-control" placeholder='<form action="/search" method="get"><input name="q"></form>'>{{ form_html | safe }}</textarea>
+
+                            <br><br>
+
+                            <button class="btn btn-danger mt-2" onclick="submitCustomForm()">Send Form</button>
+                        </form>
+                        <button class="btn btn-info mt-2" onclick="renderCustomForm()">Preview Form</button>
+                    </div>
+                </div>
+
+                <input type="hidden" id="form-action" value="{{ form_action }}">
+                <input type="hidden" id="form-method" value="{{ form_method }}">
+                <input type="hidden" id="form-payload" value="{{ payload }}">
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div id="form-preview" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript: Prevent conflicting options -->
+<script>
+    function renderCustomForm() {
+        const code = document.getElementById("form-html").value;
+        const container = document.getElementById("form-preview");
+        const payload = document.getElementById("form-payload").value;
+
+        try {
+            container.innerHTML = code;
+
+            const inputs = container.querySelectorAll("input, textarea");
+            inputs.forEach(input => {
+                if (input.type !== "submit" && input.name && !input.value)
+                    input.value = payload || "test";
+            });
+        } catch (e) {
+            container.innerHTML = "<p style='color:red;'>Invalid form HTML</p>";
+        }
+    }
+</script>
+
+<script>
+    window.onload = function() {
+        const params = new URLSearchParams(window.location.search);
+        const formHTML = params.get("form_html");
+
+        if (formHTML) {
+            const textarea = document.getElementById("form-html");
+            const preview = document.getElementById("form-preview");
+
+            textarea.value = decodeURIComponent(formHTML);
+            preview.innerHTML = decodeURIComponent(formHTML);
+        }
+    }
+</script>
+
+<script>
+    function submitCustomForm() {
+        const preview = document.getElementById("form-preview");
+        const form = preview.querySelector("form");
+
+        if (!form) {
+          alert("No form loaded.");
+         return;
+        }
+
+        const action = document.getElementById("form-action").value || form.action;
+        const method = document.getElementById("form-method").value || form.method;
+
+        if (!action) {
+            alert("No action URL provided.");
+            return;
+        }
+
+        const newWindow = window.open("", "_blank");
+
+        const clonedForm = document.createElement("form");
+        clonedForm.action = action;
+        clonedForm.method = method || "GET";
+
+        const inputs = form.querySelectorAll("input, textarea, select");
+        inputs.forEach(input => {
+            if (!input.name) return;
+            const inputCopy = document.createElement("input");
+            inputCopy.name = input.name;
+            inputCopy.value = input.value || "test";
+            inputCopy.type = "hidden";
+            clonedForm.appendChild(inputCopy);
+        });
+
+        newWindow.document.body.appendChild(clonedForm);
+        clonedForm.submit();
+    }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const dosCheckbox = document.getElementById("dos");
+        const allCheckbox = document.getElementById("all");
+        const vulnCheckboxes = ["all", "xss", "dxss", "sqli", "bsqli", "csrf", "idor"].map(id => document.getElementById(id));
+        const allvulnCheckboxes = ["xss", "dxss", "sqli", "bsqli", "csrf", "idor"].map(id => document.getElementById(id));
+
+        dosCheckbox.addEventListener("change", function () {
+            if (this.checked) {
+                vulnCheckboxes.forEach(cb => cb.checked = false);
+            }
+        });
+
+        vulnCheckboxes.forEach(cb => {
+            cb.addEventListener("change", function () {
+                if (this.checked) {
+                    dosCheckbox.checked = false;
+                }
+            });
+        });
+
+        allCheckbox.addEventListener("change", function () {
+            if (this.checked) {
+                allvulnCheckboxes.forEach(cb => cb.checked = false);
+            }
+        });
+
+        allvulnCheckboxes.forEach(cb => {
+            cb.addEventListener("change", function () {
+                if (this.checked) {
+                    allCheckbox.checked = false;
+                }
+            });
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const sqliCheckbox = document.getElementById("sqli")
+        const bsqliCheckbox = document.getElementById("bsqli")
+
+        sqliCheckbox.addEventListener("change", function () {
+            if (this.checked) {
+                bsqliCheckbox.checked = false;
+            }
+        });
+
+        bsqliCheckbox.addEventListener("change", function () {
+            if (this.checked) {
+                sqliCheckbox.checked = false;
+            }
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const xssCheckbox = document.getElementById("xss")
+        const dxssCheckbox = document.getElementById("dxss")
+
+        xssCheckbox.addEventListener("change", function () {
+            if (this.checked) {
+                dxssCheckbox.checked = false;
+            }
+        });
+
+        dxssCheckbox.addEventListener("change", function () {
+            if (this.checked) {
+                xssCheckbox.checked = false;
+            }
+        });
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+    crossorigin="anonymous">
+</script>
+
+</body>
+</html>

